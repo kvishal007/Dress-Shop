@@ -1,0 +1,25 @@
+# ─── Node / Server ────────────────────────────────────────────────────────────
+server/node_modules/
+server/dist/
+server/.env
+server/logs/
+
+# ─── Flutter / Mobile ─────────────────────────────────────────────────────────
+mobile/.dart_tool/
+mobile/.packages
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/pubspec.lock
+
+# ─── OS / IDE ──────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# ─── Secrets ──────────────────────────────────────────────────────────────────
+*.env
+.env.*
+!.env.example
