@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
 import 'package:smart_dress_shop_pos/core/utils/formatters.dart';
 import 'package:smart_dress_shop_pos/shared/widgets/empty_state_widget.dart';
+import 'package:smart_dress_shop_pos/shared/widgets/coming_soon_banner.dart';
 
 class ExpensesScreen extends StatefulWidget {
   const ExpensesScreen({super.key});
@@ -22,6 +23,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       ),
       body: Column(
         children: [
+          const ComingSoonBanner(),
           // Monthly total banner
           Container(
             margin: const EdgeInsets.all(16),
@@ -121,7 +123,16 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               const SizedBox(height: 12),
               TextField(controller: descCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'Description / Notes')),
               const SizedBox(height: 20),
-              SizedBox(width: double.infinity, child: ElevatedButton(onPressed: () => Navigator.pop(ctx), child: const Text('Save Expense'))),
+              SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Saving Expenses is coming soon!')));
+                  Navigator.pop(ctx);
+                },
+                child: const Text('Save Expense'),
+              ),
+            ),
             ],
           ),
         ),

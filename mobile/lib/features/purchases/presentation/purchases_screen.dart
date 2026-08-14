@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
 import 'package:smart_dress_shop_pos/shared/widgets/empty_state_widget.dart';
+import 'package:smart_dress_shop_pos/shared/widgets/coming_soon_banner.dart';
 
 class PurchasesScreen extends StatelessWidget {
   const PurchasesScreen({super.key});
@@ -14,6 +15,7 @@ class PurchasesScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
+          const ComingSoonBanner(),
           _buildStatusTabs(),
           const Expanded(
             child: EmptyStateWidget(
@@ -26,7 +28,9 @@ class PurchasesScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppColors.primary,
-        onPressed: () {},
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Purchase Orders are coming soon!')));
+        },
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('New Purchase', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),

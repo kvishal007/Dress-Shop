@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
 import 'package:smart_dress_shop_pos/shared/widgets/empty_state_widget.dart';
+import 'package:smart_dress_shop_pos/shared/widgets/coming_soon_banner.dart';
 
 class AuditLogsScreen extends StatelessWidget {
   const AuditLogsScreen({super.key});
@@ -10,10 +11,18 @@ class AuditLogsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Audit Logs'),
-        actions: [IconButton(icon: const Icon(Icons.filter_list), onPressed: () {})],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Audit Logs are coming soon!')));
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
+          const ComingSoonBanner(),
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(

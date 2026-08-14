@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
 import 'package:smart_dress_shop_pos/shared/widgets/empty_state_widget.dart';
+import 'package:smart_dress_shop_pos/shared/widgets/coming_soon_banner.dart';
 
 class SuppliersScreen extends StatelessWidget {
   const SuppliersScreen({super.key});
@@ -11,6 +12,7 @@ class SuppliersScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Suppliers')),
       body: Column(
         children: [
+          const ComingSoonBanner(),
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
@@ -61,7 +63,15 @@ class SuppliersScreen extends StatelessWidget {
             const SizedBox(height: 12),
             TextField(maxLines: 2, decoration: const InputDecoration(labelText: 'Address (optional)')),
             const SizedBox(height: 20),
-            SizedBox(width: double.infinity, child: ElevatedButton(onPressed: () => Navigator.pop(ctx), child: const Text('Save Supplier'))),
+            SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Saving Suppliers is coming soon!')));
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text('Save Supplier'),
+                )),
           ],
         ),
       ),

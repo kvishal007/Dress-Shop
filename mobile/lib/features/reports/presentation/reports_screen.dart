@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
+import 'package:smart_dress_shop_pos/shared/widgets/coming_soon_banner.dart';
 import 'package:smart_dress_shop_pos/core/utils/formatters.dart';
 
 class ReportsScreen extends StatefulWidget {
@@ -43,6 +44,7 @@ class _ReportsScreenState extends State<ReportsScreen> with SingleTickerProvider
       ),
       body: Column(
         children: [
+          const ComingSoonBanner(),
           _buildPeriodSelector(),
           Expanded(
             child: TabBarView(

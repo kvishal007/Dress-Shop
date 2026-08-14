@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
+import 'package:smart_dress_shop_pos/shared/widgets/coming_soon_banner.dart';
 
 class ShopSettingsScreen extends StatelessWidget {
   const ShopSettingsScreen({super.key});
@@ -7,10 +8,22 @@ class ShopSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Shop Settings')),
+      appBar: AppBar(
+        title: const Text('Shop Settings'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Shop Settings are coming soon!')));
+            },
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const ComingSoonBanner(),
+          const SizedBox(height: 16),
           _section('Shop Information', [
             _settingTile('Shop Name', 'Smart Dress Shop', Icons.storefront_outlined),
             _settingTile('Phone Number', 'Not set', Icons.phone_outlined),

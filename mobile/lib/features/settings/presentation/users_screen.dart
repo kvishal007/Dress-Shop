@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
 import 'package:smart_dress_shop_pos/shared/widgets/empty_state_widget.dart';
+import 'package:smart_dress_shop_pos/shared/widgets/coming_soon_banner.dart';
 
 class UsersScreen extends StatelessWidget {
   const UsersScreen({super.key});
@@ -11,6 +12,7 @@ class UsersScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('User Management')),
       body: Column(
         children: [
+          const ComingSoonBanner(),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -92,9 +94,17 @@ class UsersScreen extends StatelessWidget {
                 onChanged: (v) => setSheet(() => selectedRole = v!),
               ),
               const SizedBox(height: 20),
-              SizedBox(width: double.infinity, child: ElevatedButton(onPressed: () => Navigator.pop(ctx), child: const Text('Create User'))),
-            ],
-          ),
+              SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User Management is coming soon!')));
+                  Navigator.pop(ctx);
+                },
+                child: const Text('Create User'),
+              ),
+            ),
+          ],
         ),
       ),
     );

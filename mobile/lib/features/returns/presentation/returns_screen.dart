@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
 import 'package:smart_dress_shop_pos/shared/widgets/empty_state_widget.dart';
+import 'package:smart_dress_shop_pos/shared/widgets/coming_soon_banner.dart';
 
 class ReturnsScreen extends StatelessWidget {
   const ReturnsScreen({super.key});
@@ -11,6 +12,7 @@ class ReturnsScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Returns & Exchanges')),
       body: Column(
         children: [
+          const ComingSoonBanner(),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -39,8 +41,10 @@ class ReturnsScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.warning,
-        onPressed: () {},
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Returns & Exchanges are coming soon!')));
+        },
+        backgroundColor: AppColors.primary,
         icon: const Icon(Icons.search, color: Colors.white),
         label: const Text('Find Invoice', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
 import 'package:smart_dress_shop_pos/shared/widgets/empty_state_widget.dart';
+import 'package:smart_dress_shop_pos/shared/widgets/coming_soon_banner.dart';
 
 class CustomersScreen extends StatefulWidget {
   const CustomersScreen({super.key});
@@ -22,6 +23,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
       ),
       body: Column(
         children: [
+          const ComingSoonBanner(),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -125,7 +127,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => Navigator.pop(ctx),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Saving Customers is coming soon!')));
+                  Navigator.pop(ctx);
+                },
                 child: const Text('Save Customer'),
               ),
             ),
