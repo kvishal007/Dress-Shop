@@ -9,5 +9,6 @@ router.use(authenticate);
 
 router.post('/', authorize(['ADMIN', 'MANAGER', 'CASHIER']), SaleController.createSale);
 router.get('/', authorize(['ADMIN', 'MANAGER', 'CASHIER', 'VIEWER']), SaleController.getSales);
+router.get('/:id', authorize(['ADMIN', 'MANAGER', 'CASHIER', 'VIEWER']), SaleController.getSaleById);
 
 export { router as saleRoutes };

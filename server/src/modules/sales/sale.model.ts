@@ -17,6 +17,7 @@ const saleSchema = new Schema<ISale>(
   {
     invoiceNumber: { type: String, required: true, unique: true },
     cashierId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    customerId: { type: Schema.Types.ObjectId, ref: 'Customer' },
     shopId: { type: String, default: 'main_shop' },
     items: [saleItemSchema],
     subtotal: { type: Number, required: true, min: 0 },

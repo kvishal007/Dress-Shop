@@ -5,6 +5,10 @@ import 'package:smart_dress_shop_pos/features/pos/presentation/providers/cart_pr
 import 'package:smart_dress_shop_pos/features/pos/presentation/providers/checkout_provider.dart';
 import 'package:smart_dress_shop_pos/features/products/presentation/providers/product_provider.dart';
 import 'package:smart_dress_shop_pos/features/products/data/models/product_model.dart';
+import 'package:smart_dress_shop_pos/features/customers/presentation/providers/customer_provider.dart';
+import 'package:smart_dress_shop_pos/features/customers/data/customer_model.dart';
+import 'package:smart_dress_shop_pos/features/auth/presentation/providers/auth_provider.dart';
+import 'package:smart_dress_shop_pos/core/utils/role_permissions.dart';
 import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 
 class PosScreen extends ConsumerStatefulWidget {
@@ -16,19 +20,25 @@ class PosScreen extends ConsumerStatefulWidget {
 
 class _PosScreenState extends ConsumerState<PosScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _discountController = TextEditingController();
+  final TextEditingController _amountTenderedController = TextEditingController();
   
+  String _paymentMethod = 'CASH';
+  CustomerModel? _selectedCustomer;
+  bool _showCustomerSearch = false;
+
   @override
   void dispose() {
     _searchController.dispose();
+    _discountController.dispose();
+    _amountTenderedController.dispose();
     super.dispose();
   }
 
   void _onScanBarcode() async {
     var res = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const SimpleBarcodeScannerPage(),
-      ),
+      MaterialPageRoute(builder: (context) => const SimpleBarcodeScannerPage()),
     );
     if (res is String && res.isNotEmpty && res != '-1') {
       _searchController.text = res;
@@ -46,12 +56,87 @@ class _PosScreenState extends ConsumerState<PosScreen> {
     );
 
     if (product.id.isNotEmpty) {
-      ref.read(cartProvider.notifier).addProduct(product);
-      _searchController.clear();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Added ${product.name}')));
+      if (product.stockQuantity > 0) {
+        ref.read(cartProvider.notifier).addProduct(product);
+        _searchController.clear();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Added ${product.name}')));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Out of Stock'), backgroundColor: Colors.red));
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product not found'), backgroundColor: Colors.red));
     }
+  }
+
+  void _showAddCustomerDialog() {
+    final nameCtrl = TextEditingController();
+    final phoneCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add Quick Customer'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Name *')),
+            const SizedBox(height: 8),
+            TextField(controller: phoneCtrl, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'Phone *')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () async {
+              if (nameCtrl.text.isEmpty || phoneCtrl.text.isEmpty) return;
+              final newCust = await ref.read(customerProvider.notifier).addCustomer(nameCtrl.text, phoneCtrl.text);
+              if (newCust != null) {
+                setState(() => _selectedCustomer = newCust);
+                if (mounted) Navigator.pop(ctx);
+              }
+            },
+            child: const Text('Add'),
+          )
+        ],
+      ),
+    );
+  }
+
+  void _showReceiptDialog(Map<String, dynamic> saleData) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Center(child: Text('Receipt')),
+        content: SizedBox(
+          width: 300,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(child: Text('Invoice: ${saleData['invoiceNumber']}')),
+              const Divider(),
+              ...(saleData['items'] as List).map((item) => Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(child: Text('${item['productName']} (x${item['quantity']})')),
+                  Text('₹${item['subtotal']}'),
+                ],
+              )),
+              const Divider(),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Tax:'), Text('₹${saleData['taxAmount']}')]),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Discount:'), Text('-₹${saleData['discountAmount']}')]),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Total:', style: TextStyle(fontWeight: FontWeight.bold)), Text('₹${saleData['totalAmount']}', style: const TextStyle(fontWeight: FontWeight.bold))]),
+              const SizedBox(height: 8),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Payment Method:'), Text('${saleData['paymentMethod']}')]),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () { Navigator.pop(ctx); }, child: const Text('Close & New Sale')),
+          ElevatedButton(onPressed: () {}, child: const Text('Print')),
+        ],
+      ),
+    );
   }
 
   @override
@@ -59,25 +144,32 @@ class _PosScreenState extends ConsumerState<PosScreen> {
     final cartState = ref.watch(cartProvider);
     final productsState = ref.watch(productProvider);
     final checkoutState = ref.watch(checkoutProvider);
+    final customerState = ref.watch(customerProvider);
+    final authState = ref.watch(authProvider);
+    
+    final permissions = RolePermissions(authState.user?.role ?? 'VIEWER');
 
     ref.listen<CheckoutState>(checkoutProvider, (previous, next) {
       if (next.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(next.error!), backgroundColor: Colors.red));
-      } else if (next.isSuccess) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Payment Successful! Bill Generated.'), backgroundColor: Colors.green));
+      } else if (next.isSuccess && next.saleData != null) {
+        _showReceiptDialog(next.saleData!);
+        setState(() {
+          _selectedCustomer = null;
+          _amountTenderedController.clear();
+          _discountController.clear();
+        });
       }
     });
+
+    double amountTendered = double.tryParse(_amountTenderedController.text) ?? 0;
+    double changeDue = (amountTendered - cartState.total) > 0 ? (amountTendered - cartState.total) : 0;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('POS Terminal'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.qr_code_scanner),
-            onPressed: _onScanBarcode,
-            tooltip: 'Scan Barcode',
-          ),
-          const SizedBox(width: 16),
+          IconButton(icon: const Icon(Icons.qr_code_scanner), onPressed: _onScanBarcode),
         ],
       ),
       body: Row(
@@ -107,9 +199,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                         onPressed: _onScanBarcode,
                         icon: const Icon(Icons.camera_alt),
                         label: const Text('Scan'),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                        ),
+                        style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20)),
                       ),
                     ],
                   ),
@@ -143,12 +233,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.stretch,
                                       children: [
-                                        Expanded(
-                                          child: Container(
-                                            color: Colors.grey[200],
-                                            child: const Icon(Icons.checkroom, size: 48, color: Colors.grey),
-                                          ),
-                                        ),
+                                        Expanded(child: Container(color: Colors.grey[200], child: const Icon(Icons.checkroom, size: 48, color: Colors.grey))),
                                         Padding(
                                           padding: const EdgeInsets.all(8.0),
                                           child: Column(
@@ -156,7 +241,6 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                                             children: [
                                               Text(product.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold)),
                                               Text('SKU: ${product.sku}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                                              const SizedBox(height: 4),
                                               Row(
                                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                 children: [
@@ -197,6 +281,61 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                       ],
                     ),
                   ),
+                  
+                  // Customer Selection
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: _selectedCustomer != null
+                        ? ListTile(
+                            leading: const Icon(Icons.person, color: AppColors.primary),
+                            title: Text(_selectedCustomer!.name),
+                            subtitle: Text(_selectedCustomer!.phone),
+                            trailing: IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () => setState(() => _selectedCustomer = null),
+                            ),
+                          )
+                        : Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      decoration: const InputDecoration(hintText: 'Search Customer', prefixIcon: Icon(Icons.search)),
+                                      onChanged: (v) {
+                                        setState(() => _showCustomerSearch = v.isNotEmpty);
+                                        ref.read(customerProvider.notifier).setSearchQuery(v);
+                                      },
+                                    ),
+                                  ),
+                                  IconButton(icon: const Icon(Icons.person_add), onPressed: _showAddCustomerDialog),
+                                ],
+                              ),
+                              if (_showCustomerSearch && customerState.customers.isNotEmpty)
+                                SizedBox(
+                                  height: 100,
+                                  child: ListView.builder(
+                                    itemCount: customerState.customers.length,
+                                    itemBuilder: (ctx, i) {
+                                      final c = customerState.customers[i];
+                                      return ListTile(
+                                        title: Text('${c.name} - ${c.phone}'),
+                                        onTap: () {
+                                          setState(() {
+                                            _selectedCustomer = c;
+                                            _showCustomerSearch = false;
+                                          });
+                                        },
+                                      );
+                                    },
+                                  ),
+                                )
+                            ],
+                          ),
+                  ),
+                  const Divider(height: 1),
+
+                  // Cart Items
                   Expanded(
                     child: cartState.items.isEmpty
                         ? const Center(child: Text('Cart is empty', style: TextStyle(color: Colors.grey)))
@@ -226,34 +365,79 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                             },
                           ),
                   ),
-                  const Divider(height: 1),
+                  
+                  // Payment Method
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: DropdownButtonFormField<String>(
+                      value: _paymentMethod,
+                      decoration: const InputDecoration(labelText: 'Payment Method'),
+                      items: const [
+                        DropdownMenuItem(value: 'CASH', child: Text('CASH')),
+                        DropdownMenuItem(value: 'CARD', child: Text('CARD')),
+                        DropdownMenuItem(value: 'UPI', child: Text('UPI')),
+                      ],
+                      onChanged: (v) => setState(() => _paymentMethod = v!),
+                    ),
+                  ),
+
+                  // Cash Details
+                  if (_paymentMethod == 'CASH')
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _amountTenderedController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(labelText: 'Amount Tendered'),
+                              onChanged: (_) => setState(() {}),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text('Change: ₹${changeDue.toStringAsFixed(2)}', style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  const Divider(),
+                  // Totals
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Subtotal:'),
-                            Text('₹${cartState.subtotal.toStringAsFixed(2)}'),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Tax (5%):'),
-                            Text('₹${cartState.taxAmount.toStringAsFixed(2)}'),
-                          ],
-                        ),
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Subtotal:'), Text('₹${cartState.subtotal.toStringAsFixed(2)}')]),
+                        const SizedBox(height: 4),
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Tax (5%):'), Text('₹${cartState.taxAmount.toStringAsFixed(2)}')]),
+                        
+                        // Role-gated discount
+                        if (permissions.canApplyDiscount) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Discount (₹):'),
+                              SizedBox(
+                                width: 100,
+                                height: 30,
+                                child: TextField(
+                                  controller: _discountController,
+                                  keyboardType: TextInputType.number,
+                                  decoration: const InputDecoration(border: OutlineInputBorder(), contentPadding: EdgeInsets.all(4)),
+                                  onChanged: (v) {
+                                    final amount = double.tryParse(v) ?? 0.0;
+                                    ref.read(cartProvider.notifier).setDiscount(amount);
+                                  },
+                                ),
+                              )
+                            ],
+                          )
+                        ],
                         const Divider(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Total:', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                            Text('₹${cartState.total.toStringAsFixed(2)}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                          ],
-                        ),
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text('Total:', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)), Text('₹${cartState.total.toStringAsFixed(2)}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary))]),
                         const SizedBox(height: 16),
                         SizedBox(
                           width: double.infinity,
@@ -261,11 +445,13 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                           child: ElevatedButton(
                             onPressed: cartState.items.isEmpty || checkoutState.isLoading
                                 ? null
-                                : () => ref.read(checkoutProvider.notifier).checkout('CASH'),
+                                : () {
+                                    ref.read(checkoutProvider.notifier).checkout(_paymentMethod, customerId: _selectedCustomer?.id);
+                                  },
                             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                             child: checkoutState.isLoading
                                 ? const CircularProgressIndicator(color: Colors.white)
-                                : const Text('Checkout (CASH)', style: TextStyle(fontSize: 18)),
+                                : const Text('Complete Sale', style: TextStyle(fontSize: 18)),
                           ),
                         ),
                       ],

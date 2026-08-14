@@ -22,7 +22,7 @@ class CartState {
   });
 
   double get subtotal => items.fold(0, (total, item) => total + item.subtotal);
-  double get taxAmount => subtotal * taxRate;
+  double get taxAmount => (subtotal - discountAmount) > 0 ? (subtotal - discountAmount) * taxRate : 0.0;
   double get total => subtotal + taxAmount - discountAmount;
 
   CartState copyWith({

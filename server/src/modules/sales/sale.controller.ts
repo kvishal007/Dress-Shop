@@ -11,7 +11,7 @@ export class SaleController {
     session.startTransaction();
 
     try {
-      const { items, paymentMethod, taxAmount = 0, discountAmount = 0 } = req.body;
+      const { items, paymentMethod, taxAmount = 0, discountAmount = 0, customerId } = req.body;
       const cashierId = (req as any).user.userId;
 
       if (!items || !items.length) {
@@ -55,6 +55,7 @@ export class SaleController {
       const sale = new SaleModel({
         invoiceNumber,
         cashierId,
+        ...(customerId && { customerId }),
         items: saleItems,
         subtotal,
         taxAmount,
@@ -77,8 +78,41 @@ export class SaleController {
 
   static async getSales(req: Request, res: Response, next: NextFunction) {
     try {
-      const sales = await SaleModel.find().sort({ createdAt: -1 }).limit(50);
+      const query: any = {};
+      const { date } = req.query;
+      
+      if (date) {
+        const startDate = new Date(date as string);
+        startDate.setHours(0, 0, 0, 0);
+        const endDate = new Date(date as string);
+        endDate.setHours(23, 59, 59, 999);
+        query.createdAt = { $gte: startDate, $lte: endDate };
+      }
+
+      // If user is Cashier, only show their own sales
+      if ((req as any).user.role === 'CASHIER') {
+        query.cashierId = (req as any).user.userId;
+      }
+
+      const sales = await SaleModel.find(query).sort({ createdAt: -1 }).limit(50);
       return ApiResponse.success(res, 'Sales retrieved successfully', sales);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async getSaleById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const sale = await SaleModel.findById(id).populate('cashierId', 'name').populate('customerId', 'name phone');
+      if (!sale) throw ApiError.notFound('Sale not found');
+
+      // Cashiers can only view their own sales
+      if ((req as any).user.role === 'CASHIER' && sale.cashierId.toString() !== (req as any).user.userId) {
+        throw ApiError.forbidden('You can only view your own sales');
+      }
+
+      return ApiResponse.success(res, 'Sale retrieved successfully', sale);
     } catch (error) {
       next(error);
     }

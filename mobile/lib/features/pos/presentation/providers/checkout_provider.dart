@@ -7,8 +7,9 @@ class CheckoutState {
   final bool isLoading;
   final String? error;
   final bool isSuccess;
+  final Map<String, dynamic>? saleData;
 
-  CheckoutState({this.isLoading = false, this.error, this.isSuccess = false});
+  CheckoutState({this.isLoading = false, this.error, this.isSuccess = false, this.saleData});
 }
 
 class CheckoutNotifier extends StateNotifier<CheckoutState> {
@@ -16,7 +17,7 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
 
   CheckoutNotifier(this.ref) : super(CheckoutState());
 
-  Future<void> checkout(String paymentMethod) async {
+  Future<void> checkout(String paymentMethod, {String? customerId}) async {
     final cartState = ref.read(cartProvider);
     if (cartState.items.isEmpty) {
       state = CheckoutState(error: 'Cart is empty');
@@ -38,13 +39,14 @@ class CheckoutNotifier extends StateNotifier<CheckoutState> {
         'taxAmount': cartState.taxAmount,
         'discountAmount': cartState.discountAmount,
         'paymentMethod': paymentMethod,
+        if (customerId != null) 'customerId': customerId,
       };
 
       final api = ref.read(apiClientProvider);
-      await api.instance.post('/api/v1/sales', data: payload);
+      final response = await api.instance.post('/api/v1/sales', data: payload);
 
       ref.read(cartProvider.notifier).clearCart();
-      state = CheckoutState(isSuccess: true);
+      state = CheckoutState(isSuccess: true, saleData: response.data['data']);
     } on DioException catch (e) {
       final failure = ref.read(apiClientProvider).handleDioError(e);
       state = CheckoutState(error: failure.message);

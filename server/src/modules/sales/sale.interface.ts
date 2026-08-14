@@ -12,6 +12,7 @@ export interface ISaleItem {
 export interface ISale extends Document {
   invoiceNumber: string;
   cashierId: Types.ObjectId | string;
+  customerId?: Types.ObjectId | string;
   shopId: string;
   items: ISaleItem[];
   subtotal: number;
