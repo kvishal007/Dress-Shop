@@ -10,6 +10,9 @@ import { seedDatabase } from './scripts/seed';
 
 const app: Express = express();
 
+// Trust Render's proxy (required for rate limiting behind load balancer)
+app.set('trust proxy', 1);
+
 // Security Middlewares
 app.use(helmet());
 app.use(
