@@ -4,7 +4,6 @@ import 'package:smart_dress_shop_pos/core/storage/secure_storage.dart';
 import 'package:smart_dress_shop_pos/features/auth/data/auth_repository.dart';
 import 'package:smart_dress_shop_pos/features/auth/data/models/user_model.dart';
 
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
 
 final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => AuthRepository(ref.watch(apiClientProvider)),
