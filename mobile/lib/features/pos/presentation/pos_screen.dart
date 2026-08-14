@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
 import 'package:smart_dress_shop_pos/features/pos/presentation/providers/cart_provider.dart';
 import 'package:smart_dress_shop_pos/features/pos/presentation/providers/checkout_provider.dart';
-import 'package:smart_dress_shop_pos/features/products/presentation/providers/products_provider.dart';
-import 'package:smart_dress_shop_pos/features/products/domain/models/product.dart';
+import 'package:smart_dress_shop_pos/features/products/presentation/providers/product_provider.dart';
+import 'package:smart_dress_shop_pos/features/products/data/models/product_model.dart';
 import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 
 class PosScreen extends ConsumerStatefulWidget {
@@ -37,12 +37,12 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   }
 
   void _searchAndAddProduct(String query) {
-    final productsState = ref.read(productsProvider);
-    if (productsState.products == null) return;
+    final productsState = ref.read(productProvider);
+    if (productsState.products.isEmpty) return;
     
-    final product = productsState.products!.firstWhere(
+    final product = productsState.products.firstWhere(
       (p) => p.sku.toLowerCase() == query.toLowerCase() || p.barcode?.toLowerCase() == query.toLowerCase() || p.name.toLowerCase().contains(query.toLowerCase()),
-      orElse: () => Product(id: '', name: 'Not Found', sku: '', categoryName: '', price: 0, stockQuantity: 0, minStockLevel: 0, sizes: [], colors: [], status: '', createdAt: DateTime.now(), updatedAt: DateTime.now()),
+      orElse: () => ProductModel(id: '', name: 'Not Found', sku: '', categoryName: '', price: 0, costPrice: 0, stockQuantity: 0, minStockLevel: 0, sizes: [], colors: [], status: ''),
     );
 
     if (product.id.isNotEmpty) {
@@ -57,7 +57,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   @override
   Widget build(BuildContext context) {
     final cartState = ref.watch(cartProvider);
-    final productsState = ref.watch(productsProvider);
+    final productsState = ref.watch(productProvider);
     final checkoutState = ref.watch(checkoutProvider);
 
     ref.listen<CheckoutState>(checkoutProvider, (previous, next) {
@@ -117,7 +117,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                 Expanded(
                   child: productsState.isLoading
                       ? const Center(child: CircularProgressIndicator())
-                      : productsState.products == null || productsState.products!.isEmpty
+                      : productsState.products.isEmpty
                           ? const Center(child: Text('No products available'))
                           : GridView.builder(
                               padding: const EdgeInsets.all(16),
@@ -127,9 +127,9 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                                 crossAxisSpacing: 16,
                                 mainAxisSpacing: 16,
                               ),
-                              itemCount: productsState.products!.length,
+                              itemCount: productsState.products.length,
                               itemBuilder: (context, index) {
-                                final product = productsState.products![index];
+                                final product = productsState.products[index];
                                 return InkWell(
                                   onTap: () {
                                     if (product.stockQuantity > 0) {

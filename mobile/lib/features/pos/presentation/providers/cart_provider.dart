@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:smart_dress_shop_pos/features/products/domain/models/product.dart';
+import 'package:smart_dress_shop_pos/features/products/data/models/product_model.dart';
 
 class CartItem {
-  final Product product;
+  final ProductModel product;
   int quantity;
 
   CartItem({required this.product, this.quantity = 1});
@@ -41,7 +41,7 @@ class CartState {
 class CartNotifier extends StateNotifier<CartState> {
   CartNotifier() : super(CartState());
 
-  void addProduct(Product product) {
+  void addProduct(ProductModel product) {
     final existingIndex = state.items.indexWhere((item) => item.product.id == product.id);
     if (existingIndex >= 0) {
       final newItems = List<CartItem>.from(state.items);
