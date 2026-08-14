@@ -49,10 +49,6 @@ app.get('/health', (req: Request, res: Response) => {
   });
 });
 
-// API Routes (v1)
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1', productRoutes);
-
 // Seed route helper for dev setup
 app.post('/api/v1/seed', async (req: Request, res: Response, next) => {
   try {
@@ -62,6 +58,10 @@ app.post('/api/v1/seed', async (req: Request, res: Response, next) => {
     next(error);
   }
 });
+
+// API Routes (v1)
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1', productRoutes);
 
 // 404 Route Handler
 app.use((req: Request, res: Response) => {
