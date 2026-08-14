@@ -31,7 +31,7 @@ const saleSchema = new Schema<ISale>(
     },
     status: {
       type: String,
-      enum: ['COMPLETED', 'REFUNDED', 'CANCELLED'],
+      enum: ['COMPLETED', 'REFUNDED', 'CANCELLED', 'VOIDED'],
       default: 'COMPLETED',
     },
   },
@@ -39,7 +39,6 @@ const saleSchema = new Schema<ISale>(
 );
 
 // Indexes for common queries
-saleSchema.index({ invoiceNumber: 1 });
 saleSchema.index({ cashierId: 1, createdAt: -1 });
 saleSchema.index({ createdAt: -1 });
 
