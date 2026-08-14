@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import { env } from './config/env';
 import { authRoutes } from './modules/auth/auth.routes';
 import { productRoutes } from './modules/products/product.routes';
+import { saleRoutes } from './modules/sales/sale.routes';
 import { errorHandler } from './middleware/errorHandler';
 import { ApiResponse } from './utils/apiResponse';
 import { seedDatabase } from './scripts/seed';
@@ -61,6 +62,7 @@ app.post('/api/v1/seed', async (req: Request, res: Response, next) => {
 
 // API Routes (v1)
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/sales', saleRoutes);
 app.use('/api/v1', productRoutes);
 
 // 404 Route Handler
