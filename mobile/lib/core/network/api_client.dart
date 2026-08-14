@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_dress_shop_pos/core/constants/api_constants.dart';
 import 'package:smart_dress_shop_pos/core/storage/secure_storage.dart';
 import 'package:smart_dress_shop_pos/core/errors/failure.dart';
@@ -61,3 +62,6 @@ class ApiClient {
     return ServerFailure(error.message ?? 'Unknown network error');
   }
 }
+
+final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
+

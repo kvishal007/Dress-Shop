@@ -124,7 +124,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                     ? const EmptyStateWidget(
                         icon: Icons.inventory_2_outlined,
                         title: 'No Dress Products Found',
-                        subtitle: 'Tap the + button to add new dress items to inventory.',
+                        message: 'Tap the + button to add new dress items to inventory.',
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.all(16),
