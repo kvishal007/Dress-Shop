@@ -48,3 +48,21 @@ export const authenticate = async (
     next(error);
   }
 };
+
+export const authorize = (allowedRoles: string[]) => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return next(ApiError.unauthorized('Authentication required'));
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      return next(
+        ApiError.forbidden(
+          `Access denied. Required roles: [${allowedRoles.join(', ')}]. Your role: ${req.user.role}`
+        )
+      );
+    }
+
+    next();
+  };
+};

@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { env } from './config/env';
 import { authRoutes } from './modules/auth/auth.routes';
+import { productRoutes } from './modules/products/product.routes';
 import { errorHandler } from './middleware/errorHandler';
 import { ApiResponse } from './utils/apiResponse';
 import { seedDatabase } from './scripts/seed';
@@ -50,6 +51,7 @@ app.get('/health', (req: Request, res: Response) => {
 
 // API Routes (v1)
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1', productRoutes);
 
 // Seed route helper for dev setup
 app.post('/api/v1/seed', async (req: Request, res: Response, next) => {
