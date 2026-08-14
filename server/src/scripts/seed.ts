@@ -110,6 +110,14 @@ export const seedDatabase = async () => {
     },
   ];
 
+  for (const userDef of usersData) {
+    await User.findOneAndUpdate({ email: userDef.email }, userDef, {
+      upsert: true,
+      new: true,
+    });
+  }
+  console.log('[Seed]: Users seeded successfully.');
+
   // 3. Categories Seed
   const categoriesData = [
     { name: 'Sarees', description: 'Silk, Cotton, Designer & Festive Sarees' },
