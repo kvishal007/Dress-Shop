@@ -1,6 +1,6 @@
 class ApiConstants {
   // Use localhost / 10.0.2.2 depending on target environment
-  static const String baseUrl = 'http://localhost:5000/api/v1';
+  static const String baseUrl = 'https://smart-dress-shop-api.onrender.com/api/v1';
 
   // Timeout limits
   static const Duration connectTimeout = Duration(seconds: 15);

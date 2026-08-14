@@ -6,6 +6,7 @@ import { env } from './config/env';
 import { authRoutes } from './modules/auth/auth.routes';
 import { errorHandler } from './middleware/errorHandler';
 import { ApiResponse } from './utils/apiResponse';
+import { seedDatabase } from './scripts/seed';
 
 const app: Express = express();
 
@@ -50,7 +51,6 @@ app.use('/api/v1/auth', authRoutes);
 // Seed route helper for dev setup
 app.post('/api/v1/seed', async (req: Request, res: Response, next) => {
   try {
-    const { seedDatabase } = await import('./scripts/seed');
     await seedDatabase();
     return ApiResponse.success(res, 'Database seeded successfully');
   } catch (error) {
