@@ -1,36 +1,31 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorageService {
+  static const _storage = FlutterSecureStorage();
   static const String _keyToken = 'jwt_auth_token';
   static const String _keyUser = 'cached_user_profile';
 
   static Future<void> saveToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyToken, token);
+    await _storage.write(key: _keyToken, value: token);
   }
 
   static Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_keyToken);
+    return await _storage.read(key: _keyToken);
   }
 
   static Future<void> deleteToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_keyToken);
+    await _storage.delete(key: _keyToken);
   }
 
   static Future<void> saveUserData(String jsonString) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_keyUser, jsonString);
+    await _storage.write(key: _keyUser, value: jsonString);
   }
 
   static Future<String?> getUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_keyUser);
+    return await _storage.read(key: _keyUser);
   }
 
   static Future<void> clearAll() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await _storage.deleteAll();
   }
 }
