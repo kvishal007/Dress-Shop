@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import '../../../core/network/api_client.dart';
-import '../../../core/constants/api_constants.dart';
-import '../../../core/storage/secure_storage.dart';
-import '../../../core/errors/failure.dart';
-import 'models/user_model.dart';
+import 'package:smart_dress_shop_pos/core/network/api_client.dart';
+import 'package:smart_dress_shop_pos/core/constants/api_constants.dart';
+import 'package:smart_dress_shop_pos/core/storage/secure_storage.dart';
+import 'package:smart_dress_shop_pos/core/errors/failure.dart';
+import 'package:smart_dress_shop_pos/features/auth/data/models/user_model.dart';
 
 class AuthRepository {
   final ApiClient _apiClient;

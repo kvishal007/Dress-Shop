@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_strings.dart';
-import '../../core/utils/role_permissions.dart';
-import '../../features/auth/presentation/providers/auth_provider.dart';
+import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
+import 'package:smart_dress_shop_pos/core/constants/app_strings.dart';
+import 'package:smart_dress_shop_pos/core/utils/role_permissions.dart';
+import 'package:smart_dress_shop_pos/features/auth/presentation/providers/auth_provider.dart';
 
 class MainShell extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;

@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/network/api_client.dart';
-import '../../../../core/storage/secure_storage.dart';
-import '../../data/auth_repository.dart';
-import '../../data/models/user_model.dart';
+import 'package:smart_dress_shop_pos/core/network/api_client.dart';
+import 'package:smart_dress_shop_pos/core/storage/secure_storage.dart';
+import 'package:smart_dress_shop_pos/features/auth/data/auth_repository.dart';
+import 'package:smart_dress_shop_pos/features/auth/data/models/user_model.dart';
 
 final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
 

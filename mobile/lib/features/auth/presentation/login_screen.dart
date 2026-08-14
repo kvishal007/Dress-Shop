@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_strings.dart';
-import '../../../shared/widgets/custom_button.dart';
-import '../../../shared/widgets/custom_text_field.dart';
-import 'providers/auth_provider.dart';
+import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
+import 'package:smart_dress_shop_pos/core/constants/app_strings.dart';
+import 'package:smart_dress_shop_pos/shared/widgets/custom_button.dart';
+import 'package:smart_dress_shop_pos/shared/widgets/custom_text_field.dart';
+import 'package:smart_dress_shop_pos/features/auth/presentation/providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_strings.dart';
-import 'providers/auth_provider.dart';
+import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
+import 'package:smart_dress_shop_pos/core/constants/app_strings.dart';
+import 'package:smart_dress_shop_pos/features/auth/presentation/providers/auth_provider.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});

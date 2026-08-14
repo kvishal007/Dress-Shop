@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
+import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
 
 class InventoryScreen extends StatelessWidget {
   const InventoryScreen({super.key});

@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import '../constants/api_constants.dart';
-import '../storage/secure_storage.dart';
-import '../errors/failure.dart';
+import 'package:smart_dress_shop_pos/core/constants/api_constants.dart';
+import 'package:smart_dress_shop_pos/core/storage/secure_storage.dart';
+import 'package:smart_dress_shop_pos/core/errors/failure.dart';
 
 class ApiClient {
   late final Dio _dio;

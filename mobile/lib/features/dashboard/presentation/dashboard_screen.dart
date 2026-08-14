@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/utils/formatters.dart';
-import '../../../core/utils/role_permissions.dart';
-import '../../../shared/widgets/stat_card.dart';
-import '../../auth/presentation/providers/auth_provider.dart';
+import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
+import 'package:smart_dress_shop_pos/core/utils/formatters.dart';
+import 'package:smart_dress_shop_pos/core/utils/role_permissions.dart';
+import 'package:smart_dress_shop_pos/shared/widgets/stat_card.dart';
+import 'package:smart_dress_shop_pos/features/auth/presentation/providers/auth_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});

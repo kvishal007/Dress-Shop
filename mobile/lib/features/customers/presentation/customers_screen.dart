@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../shared/widgets/empty_state_widget.dart';
+import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
+import 'package:smart_dress_shop_pos/shared/widgets/empty_state_widget.dart';
 
 class CustomersScreen extends StatefulWidget {
   const CustomersScreen({super.key});

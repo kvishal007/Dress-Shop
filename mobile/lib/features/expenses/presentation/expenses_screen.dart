@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/utils/formatters.dart';
-import '../../../shared/widgets/empty_state_widget.dart';
+import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
+import 'package:smart_dress_shop_pos/core/utils/formatters.dart';
+import 'package:smart_dress_shop_pos/shared/widgets/empty_state_widget.dart';
 
 class ExpensesScreen extends StatefulWidget {
   const ExpensesScreen({super.key});
