@@ -71,7 +71,7 @@ app.post('/api/v1/seed', async (req: Request, res: Response, next) => {
 });
 
 app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/products', productRoutes);
+app.use('/api/v1', productRoutes);
 app.use('/api/v1/sales', saleRoutes);
 app.use('/api/v1/customers', customerRoutes);
 app.use('/api/v1/inventory', inventoryRoutes);
