@@ -22,7 +22,6 @@ import 'package:smart_dress_shop_pos/features/settings/presentation/audit_logs_s
 import 'package:smart_dress_shop_pos/shared/widgets/main_shell.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _shellKey = GlobalKey<NavigatorState>();
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(

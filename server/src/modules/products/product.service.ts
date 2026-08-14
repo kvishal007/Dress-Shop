@@ -44,6 +44,27 @@ export class ProductService {
     return product;
   }
 
+  static async getProductByScanCode(rawCode: string): Promise<IProduct> {
+    const code = (rawCode || '').trim();
+
+    if (!code) {
+      throw ApiError.badRequest('Scan code is required');
+    }
+    if (code.length > 100) {
+      throw ApiError.badRequest('Invalid scan code');
+    }
+
+    const product = await ProductModel.findOne({
+      $or: [{ sku: code.toUpperCase() }, { barcode: code }],
+    });
+
+    if (!product) {
+      throw ApiError.notFound('No product found for this code');
+    }
+
+    return product;
+  }
+
   static async createProduct(data: Partial<IProduct>): Promise<IProduct> {
     const existingSku = await ProductModel.findOne({ sku: data.sku });
     if (existingSku) {

@@ -41,6 +41,15 @@ export class ProductController {
     }
   }
 
+  static async scanProduct(req: Request, res: Response, next: NextFunction) {
+    try {
+      const product = await ProductService.getProductByScanCode(req.params.code);
+      return ApiResponse.success(res, 'Product retrieved successfully', product);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async createProduct(req: Request, res: Response, next: NextFunction) {
     try {
       const product = await ProductService.createProduct(req.body);

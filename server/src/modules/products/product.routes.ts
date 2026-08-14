@@ -20,6 +20,7 @@ router.post(
 
 // Product routes
 router.get('/products', ProductController.getProducts);
+router.get('/products/scan/:code', ProductController.scanProduct);
 router.get('/products/:id', ProductController.getProductById);
 router.post(
   '/products',

@@ -43,6 +43,10 @@ const ProductSchema: Schema = new Schema(
   { timestamps: true }
 );
 
+// A scanner code must resolve to exactly one product; sparse so products
+// without a barcode (undefined) don't collide.
+ProductSchema.index({ barcode: 1 }, { unique: true, sparse: true });
+
 // Pre-save middleware to calculate status automatically based on stock
 ProductSchema.pre<IProduct>('save', function (next) {
   if (this.stockQuantity <= 0) {

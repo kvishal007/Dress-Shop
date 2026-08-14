@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
 
 class ComingSoonBanner extends StatelessWidget {
   final String message;

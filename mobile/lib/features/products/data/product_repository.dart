@@ -41,6 +41,17 @@ class ProductRepository {
     }
   }
 
+  Future<ProductModel> getProductByScanCode(String code) async {
+    try {
+      final response = await _apiClient.instance.get('/products/scan/${Uri.encodeComponent(code)}');
+      return ProductModel.fromJson(response.data['data']);
+    } on DioException catch (e) {
+      throw _apiClient.handleDioError(e);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
   Future<ProductModel> createProduct(Map<String, dynamic> productData) async {
     try {
       final response = await _apiClient.instance.post(

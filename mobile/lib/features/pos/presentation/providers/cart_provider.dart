@@ -38,18 +38,29 @@ class CartState {
   }
 }
 
+enum AddToCartResult { added, outOfStock, stockExceeded }
+
 class CartNotifier extends StateNotifier<CartState> {
   CartNotifier() : super(CartState());
 
-  void addProduct(ProductModel product) {
+  AddToCartResult addProduct(ProductModel product) {
     final existingIndex = state.items.indexWhere((item) => item.product.id == product.id);
     if (existingIndex >= 0) {
+      final existing = state.items[existingIndex];
+      if (existing.quantity >= product.stockQuantity) {
+        return AddToCartResult.stockExceeded;
+      }
       final newItems = List<CartItem>.from(state.items);
-      newItems[existingIndex].quantity++;
+      newItems[existingIndex] = CartItem(product: product, quantity: existing.quantity + 1);
       state = state.copyWith(items: newItems);
-    } else {
-      state = state.copyWith(items: [...state.items, CartItem(product: product)]);
+      return AddToCartResult.added;
     }
+
+    if (product.stockQuantity <= 0) {
+      return AddToCartResult.outOfStock;
+    }
+    state = state.copyWith(items: [...state.items, CartItem(product: product)]);
+    return AddToCartResult.added;
   }
 
   void removeProduct(String productId) {
