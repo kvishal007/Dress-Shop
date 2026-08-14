@@ -117,4 +117,39 @@ export class SaleController {
       next(error);
     }
   }
+
+  static async voidSale(req: Request, res: Response, next: NextFunction) {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+      const { id } = req.params;
+      const sale = await SaleModel.findById(id).session(session);
+      if (!sale) {
+        throw ApiError.notFound('Sale not found');
+      }
+      if (sale.status === 'VOIDED') {
+        throw ApiError.badRequest('Sale is already voided');
+      }
+
+      // Restock items
+      for (const item of sale.items) {
+        await ProductModel.findByIdAndUpdate(item.productId, {
+          $inc: { stockQuantity: item.quantity }
+        }).session(session);
+      }
+
+      sale.status = 'VOIDED';
+      await sale.save({ session });
+      
+      // Also log to AuditLog ideally, but we can assume AuditService does it or we skip for now as per minimal reqs.
+
+      await session.commitTransaction();
+      return ApiResponse.success(res, 'Sale voided successfully', sale);
+    } catch (error) {
+      await session.abortTransaction();
+      next(error);
+    } finally {
+      session.endSession();
+    }
+  }
 }

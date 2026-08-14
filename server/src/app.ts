@@ -5,6 +5,16 @@ import rateLimit from 'express-rate-limit';
 import { env } from './config/env';
 import { authRoutes } from './modules/auth/auth.routes';
 import { productRoutes } from './modules/products/product.routes';
+import { customerRoutes } from './modules/customers/customer.routes';
+import { inventoryRoutes } from './modules/inventory/inventory.routes';
+import { purchaseRoutes } from './modules/purchases/purchase.routes';
+import { supplierRoutes } from './modules/suppliers/supplier.routes';
+import { expenseRoutes } from './modules/expenses/expense.routes';
+import { returnRoutes } from './modules/returns/return.routes';
+import { reportRoutes } from './modules/reports/report.routes';
+import { userRoutes } from './modules/users/user.routes';
+import { settingsRoutes } from './modules/settings/settings.routes';
+import { auditRoutes } from './modules/audit/audit.routes';
 import { saleRoutes } from './modules/sales/sale.routes';
 import { errorHandler } from './middleware/errorHandler';
 import { ApiResponse } from './utils/apiResponse';
@@ -60,10 +70,19 @@ app.post('/api/v1/seed', async (req: Request, res: Response, next) => {
   }
 });
 
-// API Routes (v1)
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/sales', saleRoutes);
-app.use('/api/v1', productRoutes);
+app.use('/api/v1/customers', customerRoutes);
+app.use('/api/v1/inventory', inventoryRoutes);
+app.use('/api/v1/purchases', purchaseRoutes);
+app.use('/api/v1/suppliers', supplierRoutes);
+app.use('/api/v1/expenses', expenseRoutes);
+app.use('/api/v1/returns', returnRoutes);
+app.use('/api/v1/reports', reportRoutes);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/settings', settingsRoutes);
+app.use('/api/v1/audit', auditRoutes);
 
 // 404 Route Handler
 app.use((req: Request, res: Response) => {

@@ -58,6 +58,15 @@ class SalesNotifier extends StateNotifier<SalesState> {
     state = state.copyWith(selectedDate: date);
     loadSales();
   }
+
+  Future<void> voidSale(String id) async {
+    try {
+      await _repository.voidSale(id);
+      loadSales();
+    } catch (e) {
+      throw Exception('Failed to void sale: $e');
+    }
+  }
 }
 
 final salesProvider = StateNotifierProvider<SalesNotifier, SalesState>((ref) {

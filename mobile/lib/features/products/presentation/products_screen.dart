@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
 import 'package:smart_dress_shop_pos/features/auth/presentation/providers/auth_provider.dart';
 import 'package:smart_dress_shop_pos/shared/widgets/empty_state_widget.dart';
+import 'package:smart_dress_shop_pos/core/utils/role_permissions.dart';
 import 'providers/product_provider.dart';
 import '../data/models/product_model.dart';
 
@@ -249,7 +250,8 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
               PopupMenuButton<String>(
                 onSelected: (value) {
                   if (value == 'edit') {
-                    _showEditProductDialog(context, product);
+                    final role = ref.read(authProvider).user?.role ?? 'CASHIER';
+                    _showEditProductDialog(context, product, role);
                   } else if (value == 'delete') {
                     _confirmDeleteProduct(context, product);
                   }
@@ -370,10 +372,14 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     );
   }
 
-  void _showEditProductDialog(BuildContext context, ProductModel product) {
+  void _showEditProductDialog(BuildContext context, ProductModel product, String userRole) {
     final nameController = TextEditingController(text: product.name);
     final priceController = TextEditingController(text: product.price.toString());
     final stockController = TextEditingController(text: product.stockQuantity.toString());
+    final costController = TextEditingController(text: product.costPrice.toString());
+    
+    final canEditPrice = RolePermissions(userRole).canEditPrices;
+    final canViewProfit = RolePermissions(userRole).canViewProfitData;
 
     showDialog(
       context: context,
@@ -383,6 +389,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextField(
                   controller: nameController,
@@ -392,14 +399,32 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                 TextField(
                   controller: priceController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Price (₹)'),
+                  enabled: canEditPrice,
+                  decoration: InputDecoration(
+                    labelText: 'Price (₹)',
+                    filled: !canEditPrice,
+                    fillColor: canEditPrice ? Colors.transparent : Colors.grey.withOpacity(0.1),
+                  ),
                 ),
+                if (!canEditPrice)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 4.0),
+                    child: Text('Only Admin can edit price.', style: TextStyle(color: AppColors.warning, fontSize: 12)),
+                  ),
                 const SizedBox(height: 10),
                 TextField(
                   controller: stockController,
                   keyboardType: TextInputType.number,
                   decoration: const InputDecoration(labelText: 'Stock Quantity'),
                 ),
+                if (canViewProfit) ...[
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: costController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Cost Price (₹)'),
+                  ),
+                ]
               ],
             ),
           ),
@@ -407,11 +432,18 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
             ElevatedButton(
               onPressed: () async {
-                final success = await ref.read(productProvider.notifier).updateProduct(product.id, {
+                final updates = <String, dynamic>{
                   'name': nameController.text.trim(),
-                  'price': double.tryParse(priceController.text) ?? product.price,
                   'stockQuantity': int.tryParse(stockController.text) ?? product.stockQuantity,
-                });
+                };
+                if (canEditPrice) {
+                  updates['price'] = double.tryParse(priceController.text) ?? product.price;
+                }
+                if (canViewProfit) {
+                  updates['costPrice'] = double.tryParse(costController.text) ?? product.costPrice;
+                }
+
+                final success = await ref.read(productProvider.notifier).updateProduct(product.id, updates);
 
                 if (success && mounted) {
                   Navigator.pop(context);

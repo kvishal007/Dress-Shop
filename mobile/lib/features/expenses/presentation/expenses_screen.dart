@@ -1,21 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_dress_shop_pos/core/constants/app_colors.dart';
 import 'package:smart_dress_shop_pos/core/utils/formatters.dart';
 import 'package:smart_dress_shop_pos/shared/widgets/empty_state_widget.dart';
-import 'package:smart_dress_shop_pos/shared/widgets/coming_soon_banner.dart';
+import 'package:smart_dress_shop_pos/features/expenses/presentation/providers/expense_provider.dart';
+import 'package:intl/intl.dart';
 
-class ExpensesScreen extends StatefulWidget {
+class ExpensesScreen extends ConsumerStatefulWidget {
   const ExpensesScreen({super.key});
   @override
-  State<ExpensesScreen> createState() => _ExpensesScreenState();
+  ConsumerState<ExpensesScreen> createState() => _ExpensesScreenState();
 }
 
-class _ExpensesScreenState extends State<ExpensesScreen> {
+class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
   final _categories = ['Rent', 'Electricity', 'Salaries', 'Internet', 'Transport', 'Packaging', 'Advertising', 'Repairs', 'Other'];
   String _selectedCategory = 'All';
 
   @override
   Widget build(BuildContext context) {
+    final expenseState = ref.watch(expenseProvider);
+
+    final filteredExpenses = _selectedCategory == 'All' 
+        ? expenseState.expenses 
+        : expenseState.expenses.where((e) => e.category == _selectedCategory).toList();
+
+    final currentMonthTotal = expenseState.expenses
+        .where((e) => e.date.month == DateTime.now().month && e.date.year == DateTime.now().year)
+        .fold<double>(0, (sum, e) => sum + e.amount);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Expenses'),
@@ -23,7 +35,6 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
       ),
       body: Column(
         children: [
-          const ComingSoonBanner(),
           // Monthly total banner
           Container(
             margin: const EdgeInsets.all(16),
@@ -40,7 +51,7 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
                   children: [
                     const Text('This Month\'s Total', style: TextStyle(color: Colors.white70, fontSize: 12)),
                     const SizedBox(height: 4),
-                    Text(Formatters.formatCurrency(0), style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+                    Text(Formatters.formatCurrency(currentMonthTotal), style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'monospace')),
                   ],
                 ),
                 const Icon(Icons.payments_outlined, color: Colors.white54, size: 36),
@@ -70,12 +81,30 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          const Expanded(
-            child: EmptyStateWidget(
-              icon: Icons.payments_outlined,
-              title: 'No Expenses Recorded',
-              message: 'Track shop expenses like rent, electricity, salaries and more to calculate accurate net profit.',
-            ),
+          Expanded(
+            child: expenseState.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : filteredExpenses.isEmpty
+                    ? const EmptyStateWidget(
+                        icon: Icons.payments_outlined,
+                        title: 'No Expenses Recorded',
+                        message: 'Track shop expenses like rent, electricity, salaries and more to calculate accurate net profit.',
+                      )
+                    : ListView.builder(
+                        itemCount: filteredExpenses.length,
+                        itemBuilder: (context, index) {
+                          final expense = filteredExpenses[index];
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: const Color(0xFF8B5CF6).withOpacity(0.2),
+                              child: const Icon(Icons.receipt_long, color: Color(0xFF8B5CF6)),
+                            ),
+                            title: Text(expense.category, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Text('${DateFormat('MMM dd, yyyy').format(expense.date)} • ${expense.note}'),
+                            trailing: Text(Formatters.formatCurrency(expense.amount), style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.error, fontSize: 16, fontFamily: 'monospace')),
+                          );
+                        },
+                      ),
           ),
         ],
       ),
@@ -92,6 +121,8 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
     String selectedCat = _categories[0];
     final amountCtrl = TextEditingController();
     final descCtrl = TextEditingController();
+    bool isSaving = false;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -114,25 +145,40 @@ class _ExpensesScreenState extends State<ExpensesScreen> {
               const SizedBox(height: 12),
               TextField(controller: amountCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Amount (₹) *', prefixText: '₹ ')),
               const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: 'Cash',
-                decoration: const InputDecoration(labelText: 'Payment Method'),
-                items: ['Cash', 'UPI', 'Bank Transfer', 'Card'].map((m) => DropdownMenuItem(value: m, child: Text(m))).toList(),
-                onChanged: (_) {},
-              ),
-              const SizedBox(height: 12),
-              TextField(controller: descCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'Description / Notes')),
+              TextField(controller: descCtrl, maxLines: 2, decoration: const InputDecoration(labelText: 'Description / Notes *')),
               const SizedBox(height: 20),
               SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Saving Expenses is coming soon!')));
-                  Navigator.pop(ctx);
-                },
-                child: const Text('Save Expense'),
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isSaving ? null : () async {
+                    final amount = double.tryParse(amountCtrl.text);
+                    if (amount == null || amount <= 0 || descCtrl.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Enter a valid amount and description'), backgroundColor: AppColors.error));
+                      return;
+                    }
+                    
+                    setSheet(() => isSaving = true);
+                    try {
+                      await ref.read(expenseProvider.notifier).addExpense({
+                        'category': selectedCat,
+                        'amount': amount,
+                        'date': DateTime.now().toIso8601String(),
+                        'note': descCtrl.text,
+                      });
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Expense logged successfully'), backgroundColor: AppColors.accent));
+                        Navigator.pop(ctx);
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error));
+                        setSheet(() => isSaving = false);
+                      }
+                    }
+                  },
+                  child: isSaving ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Save Expense'),
+                ),
               ),
-            ),
             ],
           ),
         ),

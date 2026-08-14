@@ -16,4 +16,13 @@ class SalesRepository {
     final List<dynamic> data = response.data['data'] ?? [];
     return data.map((json) => SaleModel.fromJson(json)).toList();
   }
+
+  Future<SaleModel> createSale(Map<String, dynamic> saleData) async {
+    final response = await _apiClient.instance.post('/api/v1/sales', data: saleData);
+    return SaleModel.fromJson(response.data['data']);
+  }
+
+  Future<void> voidSale(String id) async {
+    await _apiClient.instance.patch('/api/v1/sales/$id/void');
+  }
 }

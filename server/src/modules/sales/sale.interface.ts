@@ -1,5 +1,12 @@
 import { Document, Types } from 'mongoose';
 
+export enum SaleStatusEnum {
+  COMPLETED = 'COMPLETED',
+  REFUNDED = 'REFUNDED',
+  CANCELLED = 'CANCELLED',
+  VOIDED = 'VOIDED',
+}
+
 export interface ISaleItem {
   productId: Types.ObjectId | string;
   productName: string;
@@ -20,7 +27,7 @@ export interface ISale extends Document {
   discountAmount: number;
   totalAmount: number;
   paymentMethod: 'CASH' | 'CARD' | 'UPI' | 'OTHER';
-  status: 'COMPLETED' | 'REFUNDED' | 'CANCELLED';
+  status: 'COMPLETED' | 'REFUNDED' | 'CANCELLED' | 'VOIDED';
   createdAt: Date;
   updatedAt: Date;
 }
